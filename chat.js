@@ -7,14 +7,13 @@ import { stdin as input, stdout as output } from 'node:process';
 
 import fs from 'fs'
 
-const filename = '~/.chat_log';
+const filename = '/home/steve/.chat_log';
 //fs.openSync(filename, 'a'); 
 if (!fs.existsSync(filename)) fs.closeSync(fs.openSync(filename, 'w'));
 
 function save(text) {
-    fs.appendFile(filename, 'text\n\n', (err) => {
+    fs.appendFile(filename, text + "\n\n", (err) => {
       if (err) throw err;
-      console.log('Saved!');
     });
 }
 
@@ -24,19 +23,49 @@ if (!process.env.OPENAI_API_KEY) {
 }
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
 const rl = readline.createInterface({ input, output });
+
+rl.on('close', () => {
+  console.log('Exiting...');
+  rl.close();
+  process.exit(0);
+});
+
+process.stdin.resume();
+process.stdin.setEncoding('utf8');
+
+process.stdin.on('end', () => {
+  console.log('Ctrl+D was pressed (EOF received)');
+  rl.close()
+  client.close() 
+  process.exit();
+}); 
+
+process.on('SIGINT', async () => {
+  console.log('Cleaning up...');
+  rl.close()
+  client.close() 
+  process.exit();
+});
+
+process.on('SIGTERM', async () => {
+  console.log('Cleaning up...');
+  rl.close()
+  client.close() 
+  process.exit();
+}); 
+
 
 const messages = [
   { role: 'system', content: 'You are a helpful assistant and as consise as possible' }
 ];
 
 async function main() {
-  console.log('Chatbot ready. Type "exit" to quit.');
+  // console.log('Chatbot ready. Type "exit" to quit.');
   while (true) {
-    const userText = await rl.question('You: ');
-    if (!userText) continue;
-    if (['exit', 'quit'].includes(userText.toLowerCase())) break;
+    const userText = await rl.question('Query: ');
+    // if (!userText) continue;
+    if (['exit', 'quit', ''].includes(userText.toLowerCase())) break;
 
     save("User: " + userText);
     messages.push({ role: 'user', content: userText });
@@ -49,7 +78,7 @@ async function main() {
       });
 
       const reply = completion.choices?.[0]?.message?.content ?? '(no reply)';
-      save("Reply: " + reply);
+      save("Assistant: " + reply);
       console.log('Bot:', reply);
       messages.push({ role: 'assistant', content: reply });
     } catch (err) {
