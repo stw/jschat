@@ -1,5 +1,6 @@
 // Needs: npm install openai dotenv
 
+import os from 'os';
 import 'dotenv/config';
 import OpenAI from 'openai';
 import readline from 'node:readline/promises';
@@ -7,9 +8,14 @@ import { stdin as input, stdout as output } from 'node:process';
 
 import fs from 'fs'
 
-const filename = '/home/steve/.chat_log';
-//fs.openSync(filename, 'a'); 
-if (!fs.existsSync(filename)) fs.closeSync(fs.openSync(filename, 'w'));
+const homedir = os.homedir();
+const filename = homedir + '/.chat_log';
+try {
+  const fd = fs.openSync(filename, 'a');
+  fs.closeSync(fd);
+} catch (err) {
+  console.error('Error opening file: ', err);
+}
 
 function save(text) {
     fs.appendFile(filename, text + "\n\n", (err) => {
@@ -90,24 +96,3 @@ async function main() {
 }
 
 main();
-
-
-// require('dotenv').config();
-// const OpenAI = require('openai');
-// const readline = require("readline");
-//
-// const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-//
-// const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-// rl.setPrompt("You: ");
-// rl.prompt();
-//
-// rl.on("line", async (input) => {
-//   const res = await openai.chat.completions.create({
-//     model: "gpt-5",
-//     messages: [{ role: "user", content: input }]
-//   });
-//   console.log("Bot:", res.choices[0].message.content.trim());
-//   rl.prompt();
-// }); 
-
