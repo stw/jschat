@@ -8,7 +8,7 @@ Logs conversations to ~/.chat_log
 
 ## Setup
 
-```bash 
+```bash
 git clone https://github.com/stw/jschat.git jschat
 cd jschat
 npm install
@@ -16,7 +16,13 @@ npm install
 
 Add your OPENAI_API_KEY key to .env
 
+```bash 
+echo 'OPENAI_API_KEY="<your key>"' > .env
 ```
+
+Then run the script:
+
+```bash
 node chat.js
 ```
 
